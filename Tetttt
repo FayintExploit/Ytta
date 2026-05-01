@@ -1,0 +1,136 @@
+if game.PlaceId ~= 94049053924712 then
+    game:GetService("Players").LocalPlayer:Kick("This script only supports this game.")
+    return
+end
+
+-- CLEAN GUI
+pcall(function()
+    local cg = game:GetService("CoreGui"):FindFirstChild("SeraphisUI")
+    if cg then cg:Destroy() end
+end)
+
+-- LOAD FLUENT
+local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-Modded/releases/download/N/Fluent.lua"))()
+
+local SaveManager = Fluent.SaveManager
+local InterfaceManager = Fluent.InterfaceManager
+
+-- WINDOW
+local Window = Fluent:CreateWindow({
+    Title = "Seraphis Hub",
+    SubTitle = "Run on lava for brainrot",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(500, 350),
+    Acrylic = true,
+    Theme = "Blood Red",
+    MinimizeKey = Enum.KeyCode.LeftControl,
+})
+
+-- TAB
+local MainTab = Window:AddTab({ Title = "Main", Icon = "home" })
+local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "settings" })
+
+-- SECTION
+local MainSection = MainTab:AddSection("Testing")
+
+-- ========================
+-- TEST BUTTON
+-- ========================
+MainSection:AddButton({
+    Title = "Test Currency Call",
+    Callback = function()
+        local ok, err = pcall(function()
+            local K = game:GetService("ReplicatedStorage")
+                .Packages._Index["acecateer_knit@1.7.2"]
+                .knit.Services
+
+            K.DataService.RF.TryAddCurrency:InvokeServer("Money", math.huge)
+        end)
+
+        if ok then
+            Fluent:Notify({
+                Title = "Success",
+                Content = "Request sent!",
+                Duration = 2
+            })
+        else
+            warn("Error:", err)
+            Fluent:Notify({
+                Title = "Error",
+                Content = "Call failed",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- ========================
+-- REJOIN BUTTON
+-- ========================
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+
+MainSection:AddButton({
+    Title = "Rejoin Server",
+    Callback = function()
+        local player = Players.LocalPlayer
+
+        Fluent:Notify({
+            Title = "Rejoining...",
+            Content = "Please wait",
+            Duration = 2
+        })
+
+        task.wait(1)
+
+        pcall(function()
+            TeleportService:Teleport(game.PlaceId, player)
+        end)
+    end
+})
+
+-- ========================
+-- SETTINGS
+-- ========================
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+InterfaceManager:SetFolder("SeraphisHub")
+SaveManager:SetFolder("SeraphisHub/Config")
+
+InterfaceManager:BuildInterfaceSection(SettingsTab)
+SaveManager:BuildConfigSection(SettingsTab)
+
+-- ========================
+-- FLOAT BUTTON
+-- ========================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SeraphisUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local Btn = Instance.new("ImageButton")
+Btn.Size = UDim2.fromOffset(55,55)
+Btn.Position = UDim2.new(0.02,0,0.8,0)
+Btn.BackgroundColor3 = Color3.fromRGB(120,0,0)
+Btn.Image = "rbxassetid://99406864924124"
+Btn.Parent = ScreenGui
+
+Instance.new("UICorner", Btn)
+
+Btn.MouseButton1Click:Connect(function()
+    if Window and Window.Minimize then
+        Window:Minimize()
+    end
+end)
+
+-- ========================
+-- NOTIF
+-- ========================
+Fluent:Notify({
+    Title = "Seraphis Hub",
+    Content = "Loaded!",
+    Duration = 3
+})
+
+Window:SelectTab(1)
