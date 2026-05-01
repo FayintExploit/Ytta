@@ -1,0 +1,117 @@
+if game.PlaceId ~= 119126689474503 then
+    game:GetService("Players").LocalPlayer:Kick("This script only supports this game.")
+    return
+end
+
+-- CLEAN GUI
+pcall(function()
+    local cg = game:GetService("CoreGui"):FindFirstChild("SeraphisUI")
+    if cg then cg:Destroy() end
+end)
+
+-- LOAD FLUENT
+local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-Modded/releases/download/N/Fluent.lua"))()
+
+local SaveManager = Fluent.SaveManager
+local InterfaceManager = Fluent.InterfaceManager
+
+-- WINDOW
+local Window = Fluent:CreateWindow({
+    Title = "Seraphis Hub",
+    SubTitle = "beta",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(500, 350),
+    Acrylic = true,
+    Theme = "Blood Red",
+    MinimizeKey = Enum.KeyCode.LeftControl,
+})
+
+-- TAB
+local MainTab = Window:AddTab({ Title = "Main", Icon = "home" })
+local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "settings" })
+
+-- SECTION
+local MainSection = MainTab:AddSection("Farming")
+
+-- VARIABLES
+local running = false
+
+MainSection:AddToggle("AutoFarm", {
+    Title = "Auto Stream Farm",
+    Default = false,
+    Callback = function(v)
+        running = v
+
+        if v then
+            local replicatedstorage = game:GetService("ReplicatedStorage")
+            local streamingevent = replicatedstorage:WaitForChild("StreamingEvent")
+
+            local segmentcount = 1000
+            local secondsToRun = 30
+
+            local startstream = { "startStream" }
+            local segmentstreamed = { "segmentStreamed" }
+            local endstream = { "endStream" }
+
+            local starttime = tick()
+
+            task.spawn(function()
+                while running and tick() - starttime < secondsToRun do
+                    streamingevent:FireServer(unpack(startstream))
+                    for i = 1, segmentcount do
+                        streamingevent:FireServer(unpack(segmentstreamed))
+                    end
+                    streamingevent:FireServer(unpack(endstream))
+                    task.wait(1)
+                    game:GetService("ReplicatedStorage"):WaitForChild("GetMailBox"):FireServer()
+                end
+            end)
+
+            task.spawn(function()
+                while running and tick() - starttime < secondsToRun do
+                    game:GetService("ReplicatedStorage").Rebirth:FireServer()
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+-- SETTINGS
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+InterfaceManager:SetFolder("SeraphisHub")
+SaveManager:SetFolder("SeraphisHub/Config")
+
+InterfaceManager:BuildInterfaceSection(SettingsTab)
+SaveManager:BuildConfigSection(SettingsTab)
+
+-- FLOAT BUTTON
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SeraphisUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local Btn = Instance.new("ImageButton")
+Btn.Size = UDim2.fromOffset(55,55)
+Btn.Position = UDim2.new(0.02,0,0.8,0)
+Btn.BackgroundColor3 = Color3.fromRGB(120,0,0)
+Btn.Image = "rbxassetid://99406864924124"
+Btn.Parent = ScreenGui
+Instance.new("UICorner", Btn)
+
+Btn.MouseButton1Click:Connect(function()
+    if Window and Window.Minimize then
+        Window:Minimize()
+    end
+end)
+
+-- NOTIF
+Fluent:Notify({
+    Title = "Seraphis Hub",
+    Content = "Loaded!",
+    Duration = 3
+})
+
+Window:SelectTab(1)
