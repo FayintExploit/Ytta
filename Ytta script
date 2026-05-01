@@ -1,4 +1,4 @@
-if game.PlaceId ~= 96070927741281 then
+if game.PlaceId ~= 89469502395769 then
     game:GetService("Players").LocalPlayer:Kick("This script only supports this game.")
     return
 end
