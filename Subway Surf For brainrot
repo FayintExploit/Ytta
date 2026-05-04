@@ -1,0 +1,138 @@
+if game.PlaceId ~= 78475473751685 then
+    game:GetService("Players").LocalPlayer:Kick("This script only supports this game.")
+    return
+end
+
+-- OXYLUS_PROTOCOL: RIZAL HUB V1 - SESSION EXECUTOR EDITION
+local UIS = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+-- 1. PEMBUATAN UI DASAR
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "Fyy Hub"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player.PlayerGui
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "Toggle"
+toggleBtn.Size = UDim2.new(0, 50, 0, 50)
+toggleBtn.Position = UDim2.new(0, 10, 0.5, -25)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleBtn.Text = "OPEN"
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Parent = screenGui
+Instance.new("UICorner", toggleBtn)
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0.4, 0, 0.6, 0)
+mainFrame.Position = UDim2.new(0.5, -100, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Visible = false
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+title.Text = "  Subway Surf For brainrot"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = mainFrame
+Instance.new("UICorner", title)
+
+local container = Instance.new("ScrollingFrame")
+container.Size = UDim2.new(1, -10, 1, -50)
+container.Position = UDim2.new(0, 5, 0, 45)
+container.BackgroundTransparency = 1
+container.CanvasSize = UDim2.new(0, 0, 2, 0)
+container.ScrollBarThickness = 0
+container.Parent = mainFrame
+
+local layout = Instance.new("UIListLayout", container)
+layout.Padding = UDim.new(0, 5)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- 2. SISTEM DRAG MOBILE
+local dragging, dragStart, startPos
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true dragStart = input.Position startPos = mainFrame.Position
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
+-- 3. INPUT ELEMENTS UNTUK ARGUMENTS
+local function createInput(placeholder)
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.9, 0, 0, 35)
+    box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    box.PlaceholderText = placeholder
+    box.Text = ""
+    box.TextColor3 = Color3.new(1, 1, 1)
+    box.Font = Enum.Font.Gotham
+    box.Parent = container
+    Instance.new("UICorner", box)
+    return box
+end
+
+local rarityBox = createInput("Rarity (ex: Godly)")
+local mutateBox = createInput("Mutation (ex: Shiny)")
+local coinsBox = createInput("Coins Amount (Number)")
+
+-- 4. FUNGSI EKSEKUSI
+local execBtn = Instance.new("TextButton")
+execBtn.Size = UDim2.new(0.9, 0, 0, 45)
+execBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+execBtn.Text = "Give "
+execBtn.TextColor3 = Color3.new(1, 1, 1)
+execBtn.Font = Enum.Font.GothamBold
+execBtn.Parent = container
+Instance.new("UICorner", execBtn)
+
+execBtn.MouseButton1Click:Connect(function()
+    local rarityVal = rarityBox.Text
+    local mutateVal = mutateBox.Text
+    local coinsVal = tonumber(coinsBox.Text) or 0
+
+    local args = {
+        {
+            {
+                rarity = rarityVal,
+                mutation = mutateVal
+            }
+        },
+        {
+            coins = coinsVal
+        }
+    }
+
+    local remote = game:GetService("ReplicatedStorage"):WaitForChild("Events", 5):WaitForChild("Client", 5):WaitForChild("EndSession", 5)
+    
+    if remote then
+        remote:FireServer(unpack(args))
+        execBtn.Text = "SENT!"
+        task.wait(1)
+        execBtn.Text = "Give"
+    else
+        execBtn.Text = "REMOTE NOT FOUND"
+        task.wait(1)
+        execBtn.Text = "Give"
+    end
+end)
+
+-- 5. LOGIKA OPEN/CLOSE
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    toggleBtn.Text = mainFrame.Visible and "CLOSE" or "OPEN"
+end)
