@@ -1,0 +1,218 @@
+if game.PlaceId ~= 135816322260005 then
+    game:GetService("Players").LocalPlayer:Kick("This script only supports this game.")
+    return
+end
+
+-- RIZAL HUB V1 - BRAINROT LIST & AUTO REWARD (FIXED UPGRADE PLOT)
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+
+-- 1. DATA LIST
+local BrainrotList = {
+    "Mateo", "Illuminati", "Bananito Delfinito", "Bambini Crostini", 
+    "Balerina Capucina", "Agarrini La Pallini", "Bombardiro Crocodilo",
+    "Bombombini Gusini", "Boneca Ambalabu", "Brr Brr Patapim", 
+    "Burbaloni Loliloli", "Cacto Hipopotamo", "Cappuccino Assassino",
+    "Chef Crabracadabra", "Chicleteira Bicicleteira", "Chimpanzini Bananini",
+    "Elefanto Cocofanto", "Esok Sekolah", "Frigo Camelo", "Garamararam",
+    "Glorbo Fruttodrillo", "Job Job Job Sahur", "Karkerkar Kurkur",
+    "La Vacca Saturno Saturnita", "Lirili Larila", "Los Tralaleritos",
+    "Madung", "Odin Din Din Dun", "Orcalero Orcala", "Pakrahmatmamat",
+    "Pakrahmatmatina", "Pot Hotspot", "Rhino Toasterino", "Strawberry Elephant",
+    "Strawberrylli Flamingelli", "Svinina Bombardino", "Tatatata Sahur",
+    "Tim Cheese", "Tralalero Tralala", "Tralalita Tralala", "Trippi Troppi",
+    "Trippi Troppi Troppa Trippa", "Tung Tung Sahur"
+}
+local MutateList = {"Rainbow", "Lava", "Valentine", "Gold", "Common", "Diamond"}
+local RarityList = {"Common", "Rare", "Epic", "Mythic", "Brainrot God"}
+
+local selectedName = BrainrotList[1]
+local selectedMutate = MutateList[5]
+local selectedRarity = RarityList[1]
+
+-- 2. PEMBUATAN UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FyyHubRGB"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player.PlayerGui
+
+-- TOMBOL OPEN
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 80, 0, 35)
+toggleBtn.Position = UDim2.new(0, 10, 0.5, -15)
+toggleBtn.Text = "OPEN"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
+toggleBtn.Parent = screenGui
+local toggleStroke = Instance.new("UIStroke", toggleBtn)
+toggleStroke.Thickness = 2
+Instance.new("UICorner", toggleBtn)
+
+-- MAIN FRAME
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 260, 0, 230) 
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -115)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Visible = false
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+local frameStroke = Instance.new("UIStroke", mainFrame)
+frameStroke.Thickness = 2
+Instance.new("UICorner", mainFrame)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Text = "Fight For Brainrot "
+title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.Parent = mainFrame
+Instance.new("UICorner", title)
+
+local container = Instance.new("ScrollingFrame")
+container.Size = UDim2.new(1, -10, 1, -45) 
+container.Position = UDim2.new(0, 5, 0, 40)
+container.BackgroundTransparency = 1
+container.CanvasSize = UDim2.new(0, 0, 7, 0)
+container.ScrollBarThickness = 2
+container.Parent = mainFrame
+Instance.new("UIListLayout", container).Padding = UDim.new(0, 5)
+
+-- 3. LOGIKA RGB
+RunService.RenderStepped:Connect(function()
+    local hue = tick() % 5 / 5
+    local color = Color3.fromHSV(hue, 1, 1)
+    title.TextColor3 = color
+    frameStroke.Color = color
+    toggleStroke.Color = color
+end)
+
+-- 4. FUNGSI DRAGGABLE
+local function makeDraggable(obj, target)
+    target = target or obj
+    local dragging, dragInput, dragStart, startPos
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = target.Position
+        end
+    end)
+    obj.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    obj.InputEnded:Connect(function() dragging = false end)
+end
+
+makeDraggable(toggleBtn)
+makeDraggable(title, mainFrame)
+
+-- 5. BUTTONS & DROPDOWNS
+local function createDropdown(labelTitle, list, callback)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.95, 0, 0, 25)
+    lbl.Text = "--- " .. labelTitle .. " ---"
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = Color3.fromRGB(180, 180, 180)
+    lbl.Parent = container
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(0.95, 0, 0, 80)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, #list * 30)
+    scroll.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    scroll.Parent = container
+    Instance.new("UIListLayout", scroll)
+    for _, val in pairs(list) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 30)
+        btn.Text = val
+        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Parent = scroll
+        btn.MouseButton1Click:Connect(function()
+            callback(val)
+            lbl.Text = labelTitle .. ": " .. val
+        end)
+    end
+end
+
+createDropdown("Select Brainrot", BrainrotList, function(v) selectedName = v end)
+createDropdown("Select Mutate", MutateList, function(v) selectedMutate = v end)
+createDropdown("Select Rarity", RarityList, function(v) selectedRarity = v end)
+
+local rewardInput = Instance.new("TextBox")
+rewardInput.Size = UDim2.new(0.9, 0, 0, 35)
+rewardInput.PlaceholderText = "Not Important"
+rewardInput.Text = "1000"
+rewardInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+rewardInput.TextColor3 = Color3.new(1, 1, 1)
+rewardInput.Parent = container
+Instance.new("UICorner", rewardInput)
+
+local function createBtn(name, color, func)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.BackgroundColor3 = color
+    btn.Text = name
+    btn.Font = Enum.Font.GothamBold
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Parent = container
+    Instance.new("UICorner", btn)
+    btn.MouseButton1Click:Connect(func)
+end
+
+-- GIVE BRAINROT
+createBtn("GIVE BRAINROT", Color3.fromRGB(120, 0, 0), function()
+    local rew = tonumber(rewardInput.Text) or 0
+    local args = {
+        {{itemName = selectedName, mutation = selectedMutate, rarity = selectedRarity, reward = rew}},
+        {{Mutation = selectedMutate, Name = selectedName, Rarity = selectedRarity}}
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("BatchKillReward"):FireServer(unpack(args))
+end)
+
+-- FIX SELL ALL INVENTORY
+createBtn("SELL ALL INVENTORY", Color3.fromRGB(0, 80, 150), function()
+    local args = {"Inventory"}
+    game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("RequestSell"):FireServer(unpack(args))
+end)
+
+-- FIX UPGRADE PLOT 1-10 (Looping System)
+createBtn("Upgrade All Brainrot", Color3.fromRGB(0, 120, 0), function()
+    for i = 1, 10 do
+        local slotName = "Slot" .. i
+        local args = {slotName}
+        game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("RequestSlotUpgrade"):FireServer(unpack(args))
+        task.wait(0.1) -- Delay tipis biar nggak dianggap spam berlebihan oleh server
+    end
+end)
+
+createBtn("REBIRTH", Color3.fromRGB(100, 0, 100), function()
+    game.ReplicatedStorage._Net.RequestRebirth:FireServer()
+end)
+
+createBtn("UPGRADE ALL SKILLS", Color3.fromRGB(150, 80, 0), function()
+    local skills = {"Health", "Speed", "Aura", "Lucky", "Damage", "WeaponSlots"}
+    for _, skill in pairs(skills) do 
+        game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("AllocateSkill"):FireServer(skill) 
+    end
+end)
+
+createBtn("ENTER ARENA", Color3.fromRGB(150, 0, 0), function()
+    game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("RequestEnterArena"):FireServer()
+end)
+
+createBtn("EXIT ARENA", Color3.fromRGB(50, 50, 50), function()
+    game:GetService("ReplicatedStorage"):WaitForChild("_Net"):WaitForChild("RequestExitArena"):FireServer()
+end)
+
+-- Toggle Logic
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    toggleBtn.Text = mainFrame.Visible and "CLOSE" or "OPEN"
+end)
